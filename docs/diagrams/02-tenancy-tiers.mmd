@@ -1,0 +1,31 @@
+flowchart TB
+  subgraph SILO["SILO — dedicated everything"]
+    direction TB
+    S1["Own AWS account (M&A OU)<br/>SCP region lock"]
+    S2["Own VPC · NO peering to parent"]
+    S3["Own DB cluster · own KMS key"]
+    S4["Own log archive (object-lock)"]
+  end
+  subgraph BRIDGE["BRIDGE — shared control plane, own data boundary"]
+    direction TB
+    B1["Shared platform account"]
+    B2["Transit GW route table<br/>→ inspection VPC"]
+    B3["Own DB schema + own KMS key<br/>(crypto-shred on exit)"]
+    B4["ABAC: PrincipalTag tenant_id"]
+  end
+  subgraph POOL["POOL — fully absorbed"]
+    direction TB
+    P1["Shared everything"]
+    P2["Postgres RLS on tenant_id"]
+    P3["Parent roles inherit (≥ Day 365)"]
+  end
+  SILO -- "Day 100: risk remediated" --> BRIDGE
+  BRIDGE -- "Day 365: intent = absorb, risk ≤ 4" --> POOL
+  POOL -. "carve-out = export + purge" .-> EXIT(["Divested entity"])
+  SILO -. "carve-out = lift account" .-> EXIT
+  classDef s fill:#7a1f2b,color:#fff,stroke:#7a1f2b
+  classDef b fill:#8a5a00,color:#fff,stroke:#8a5a00
+  classDef p fill:#1d6b46,color:#fff,stroke:#1d6b46
+  class S1,S2,S3,S4 s
+  class B1,B2,B3,B4 b
+  class P1,P2,P3 p

@@ -1,0 +1,36 @@
+flowchart TB
+  DM[/"Deal manifest<br/>regimes · residency · IdP · findings · TSA · intent"/]
+  IdP["Acquired IdP<br/>AD / Entra / Okta"]
+  APP["Apps & users"]
+  DASH["Exec dashboard + JSON API"]
+
+  subgraph CP["mnat control plane"]
+    direction TB
+    TE["Tiering engine<br/>risk score + hard constraints"]
+    IDF["Identity federation<br/>group→role · SoD quarantine"]
+    REG[("Tenant registry<br/>hierarchy · tier · phase")]
+    PH["Phase gates<br/>Pre-close → D1 → D100 → D365"]
+    PDP["Policy decision point<br/>ABAC rules R0–R6"]
+    FIN["Finance<br/>chargeback · TSA · synergy"]
+    CO["Carve-out engine"]
+    AUD[("Hash-chained audit log")]
+  end
+
+  subgraph DP["Infra & data planes"]
+    direction LR
+    TF["Terraform modules<br/>silo · bridge · pool"]
+    SCOPE["TenantScopedRepo"]
+    RLS[("Postgres RLS<br/>schema-per-bridge")]
+  end
+
+  DM --> TE --> REG
+  IdP --> IDF --> REG
+  REG --> PH
+  REG --> FIN
+  PH -->|"tier migration → tfvars"| TF
+  APP -->|request| PDP
+  PDP -->|reads| REG
+  PDP -->|"tenant scope"| SCOPE --> RLS
+  CO --> SCOPE
+  PH & PDP & CO -.->|every decision| AUD
+  DASH --> CP

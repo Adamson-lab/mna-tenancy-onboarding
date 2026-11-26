@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M&amp;A Tenancy Control Plane</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#14181f;--mute:#5b6472;--line:#e3e6eb;--silo:#7a1f2b;--bridge:#8a5a00;--pool:#1d6b46;--ok:#1d6b46;--bad:#b42318;--accent:#1f3a5f}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1116;--panel:#161b22;--ink:#e6e9ee;--mute:#9aa4b2;--line:#2a313c;--ok:#4cc38a;--bad:#ff6b5e;--accent:#7fb0ff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-size:18px;margin:0}h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:0 0 10px}
+main{padding:20px 24px;display:grid;gap:16px;max-width:1400px;margin:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.kpi b{display:block;font-size:24px;font-variant-numeric:tabular-nums}.kpi span{color:var(--mute);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600;font-size:12px}td.num{text-align:right;font-variant-numeric:tabular-nums}
+.tier{display:inline-block;padding:1px 8px;border-radius:99px;color:#fff;font-size:11px;font-weight:600;text-transform:uppercase}
+.silo{background:var(--silo)}.bridge{background:var(--bridge)}.pool{background:var(--pool)}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}ul.bl{margin:0;padding-left:16px;color:var(--mute)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+button{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px}
+input,select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px;width:100%}
+form{display:grid;grid-template-columns:1fr 1fr;gap:8px}pre{white-space:pre-wrap;word-break:break-word;font-size:12px;margin:0}
+.scroll{overflow-x:auto}.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<header><h1>M&amp;A Tenancy Control Plane</h1><span id="audit" class="mono"></span></header>
+<main>
+  <section class="kpis" id="kpis"></section>
+  <section class="card"><h2>Tenant hierarchy (live)</h2><div class="scroll"><pre class="mermaid" id="mmd"></pre></div></section>
+  <section class="card scroll"><h2>Integration portfolio</h2><table id="tbl"></table></section>
+  <section class="grid2">
+    <div class="card"><h2>Authorization playground</h2>
+      <form id="az">
+        <input name="principal" value="northwind:cro" placeholder="principal">
+        <select name="action"></select>
+        <input name="tenant" value="northwind-globex-bank" placeholder="tenant">
+        <input name="region" placeholder="request region (optional)">
+        <button type="submit" style="grid-column:span 2">Evaluate</button>
+      </form><pre id="azout" style="margin-top:10px"></pre></div>
+    <div class="card scroll"><h2>TSA exposure (90 days)</h2><table id="tsa"></table></div>
+  </section>
+  <section class="card scroll"><h2>Audit trail (hash-chained, latest 25)</h2><table id="aud"></table></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+const $=s=>document.querySelector(s), money=n=>'$'+Math.round(n).toLocaleString();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ACTIONS=["read_aggregated_financials","read_customer_data","read_customer_pii","initiate_payment","approve_payment","admin_infrastructure","read_hr_records","read_audit_evidence"];
+$('select[name=action]').innerHTML=ACTIONS.map(a=>`<option>${a}</option>`).join('');
+async function load(){
+  const p=await (await fetch('/api/portfolio')).json();
+  $('#audit').innerHTML=p.audit.valid?`<span class="ok">audit chain valid</span> · ${p.audit.entries} entries`:`<span class="bad">AUDIT CHAIN BROKEN at #${p.audit.broken_at_seq}</span>`;
+  const blocked=p.tenants.filter(t=>t.gate_ready===false).length;
+  $('#kpis').innerHTML=[
+    [p.tenants.length,'acquired tenants'],[money(p.annualised_synergy),'annualised synergy at target tier + TSA exit'],
+    [money(p.monthly_tsa_run_rate),'monthly TSA run-rate'],[p.tsa.red,'TSAs RED (≤90d, no exit plan)'],
+    [blocked,'tenants blocked at gate'],[p.tenants.reduce((a,t)=>a+t.sod_conflicts,0),'live SoD conflicts']
+  ].map(([v,l])=>`<div class="card kpi"><b>${v}</b><span>${l}</span></div>`).join('');
+  $('#tbl').innerHTML='<tr><th>Tenant</th><th>Tier → target</th><th>Phase</th><th>Risk</th><th>Regimes</th><th>Gate to next phase</th><th class="num">Platform $/mo</th><th class="num">Synergy $/yr</th><th></th></tr>'+
+    p.tenants.map(t=>`<tr><td><b>${esc(t.name)}</b><div class="mono">${t.tenant_id}</div></td>
+      <td><span class="tier ${t.tier}">${t.tier}</span> → <span class="tier ${t.target_tier}">${t.target_tier}</span></td>
+      <td class="mono">${t.phase}</td><td class="num">${t.risk_score??''}</td><td>${t.regimes.join(', ')}</td>
+      <td>${t.gate_ready===null?'—':t.gate_ready?'<span class="ok">READY</span>':'<span class="bad">BLOCKED</span><ul class="bl">'+t.blockers.map(b=>`<li>${esc(b)}</li>`).join('')+'</ul>'}</td>
+      <td class="num">${money(t.monthly_cost)}</td><td class="num">${money(t.annualised_synergy)}</td>
+      <td>${t.gate_ready?`<button onclick="adv('${t.tenant_id}')">Advance</button>`:''}</td></tr>`).join('');
+  $('#tsa').innerHTML='<tr><th>Tenant</th><th>Service</th><th>Ends</th><th class="num">Days</th><th class="num">$/mo</th><th>Status</th></tr>'+
+    p.tsa.services.map(s=>`<tr><td class="mono">${s.tenant_id}</td><td>${esc(s.name)}</td><td>${s.end_date}</td><td class="num">${s.days_left}</td><td class="num">${money(s.monthly_cost)}</td><td class="${s.status==='RED'||s.status==='EXPIRED'?'bad':s.status==='GREEN'?'ok':''}">${s.status}</td></tr>`).join('');
+  const a=await (await fetch('/api/audit?limit=25')).json();
+  $('#aud').innerHTML='<tr><th>#</th><th>When</th><th>Actor</th><th>Action</th><th>Tenant</th><th>Sev</th><th>Hash</th></tr>'+
+    a.map(r=>`<tr><td>${r.seq}</td><td class="mono">${r.ts}</td><td class="mono">${esc(r.actor)}</td><td>${esc(r.action)}</td><td class="mono">${r.tenant_id??''}</td><td class="${r.severity==='info'?'':'bad'}">${r.severity}</td><td class="mono">${r.hash.slice(0,12)}…</td></tr>`).join('');
+  const m=await (await fetch('/api/hierarchy.mmd')).text();
+  const el=$('#mmd'); el.removeAttribute('data-processed'); el.textContent=m;
+  if(window.mermaid){mermaid.initialize({startOnLoad:false,securityLevel:'loose'}); try{await mermaid.run({nodes:[el]})}catch(e){}}
+}
+async function adv(id){const r=await fetch(`/api/tenants/${id}/advance`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actor:'dashboard'})});alert(JSON.stringify(await r.json(),null,2));load();}
+$('#az').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);const body={principal:f.get('principal'),action:f.get('action'),tenant:f.get('tenant'),ctx:f.get('region')?{region:f.get('region')}:{}};
+  const r=await fetch('/api/authorize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();
+  $('#azout').innerHTML=`<span class="${d.allow?'ok':'bad'}">${d.allow?'ALLOW':'DENY'}</span> [${d.rule}] ${esc(d.reason)}`;load();};
+load();
+</script>
+</body>
+</html>

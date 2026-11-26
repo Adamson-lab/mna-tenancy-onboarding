@@ -1,0 +1,15 @@
+services:
+  control-plane:
+    build: .
+    ports: ["8080:8080"]
+    volumes: ["mnat-data:/data"]
+  # Production data plane with RLS (sql/postgres_rls.sql auto-applied)
+  postgres:
+    image: postgres:16.4
+    environment:
+      POSTGRES_PASSWORD: localdev-only
+      POSTGRES_DB: mnat
+    volumes: ["./sql:/docker-entrypoint-initdb.d:ro"]
+    ports: ["5432:5432"]
+volumes:
+  mnat-data: {}

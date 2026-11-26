@@ -1,0 +1,16 @@
+flowchart TD
+  A(["Deal manifest"]) --> B{"Sovereign regime?<br/>FedRAMP-High · ITAR · CJIS<br/>CMMC-L3 · NDPR-Sovereign"}
+  B -- yes --> SILO1["Target = SILO forever"]
+  B -- no --> C{"Residency region<br/>served by parent?"}
+  C -- no --> SILO2["Target = regional SILO<br/>until a cell exists"]
+  C -- yes --> D{"Intent"}
+  D -- divest_likely --> SILO3["Target = SILO<br/>(carve-out-ready)"]
+  D -- preserve --> BR["Target = BRIDGE"]
+  D -- absorb --> E{"Risk score ≤ 4?<br/>regimes + criticals +<br/>MFA gap + legacy AD"}
+  E -- yes --> PO["Target = POOL"]
+  E -- no --> BR2["Target = BRIDGE"]
+  SILO1 & SILO2 & SILO3 & BR & PO & BR2 --> F{"Hard constraint<br/>or risk ≥ 5?"}
+  F -- yes --> D1S["Day-1 = SILO"]
+  F -- "risk 2–4" --> D1B["Day-1 = BRIDGE"]
+  F -- "risk < 2" --> D1T["Day-1 = BRIDGE (or target if more isolated)"]
+  D1S & D1B & D1T --> G["Invariant: Day-1 isolation ≥ target isolation"]

@@ -1,0 +1,18 @@
+sequenceDiagram
+  autonumber
+  actor B as Board / Regulator
+  participant CO as Carve-out engine
+  participant REPO as TenantScopedRepo({tenant})
+  participant FS as Evidence store
+  participant IAM as Grants
+  participant AUD as Audit chain
+  B->>CO: carve_out(northwind-umbrella-federal-systems)
+  CO->>REPO: query() — scope is exactly one tenant
+  REPO-->>CO: 25 records
+  CO->>FS: records.jsonl + sha256
+  CO->>REPO: purge(tenant)
+  CO->>REPO: count(tenant) == 0 ?
+  CO->>IAM: revoke all grants on tenant
+  CO->>FS: manifest.json (counts, hash, TSAs, clean=true)
+  CO->>AUD: carveout:completed (CRITICAL)
+  Note over CO,AUD: Policy R0 now denies every request to the tenant

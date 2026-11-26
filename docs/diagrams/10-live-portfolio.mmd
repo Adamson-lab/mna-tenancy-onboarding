@@ -1,0 +1,14 @@
+flowchart TD
+  northwind["Northwind Financial Group (parent)<br/>POOL → POOL<br/><i>integrated</i>"]:::parent
+  northwind_globex_bank["Globex Bank<br/>BRIDGE → BRIDGE<br/><i>day_100</i>"]:::bridge
+  northwind --> northwind_globex_bank
+  northwind_initech_cloud["Initech Cloud<br/>POOL → POOL<br/><i>day_365</i>"]:::pool
+  northwind --> northwind_initech_cloud
+  northwind_sahel_pay["Sahel Pay<br/>SILO → SILO<br/><i>pre_close</i>"]:::silo
+  northwind --> northwind_sahel_pay
+  northwind_umbrella_federal_systems["Umbrella Federal Systems<br/>SILO → SILO<br/><i>carved_out</i>"]:::silo
+  northwind --> northwind_umbrella_federal_systems
+  classDef parent fill:#1f3a5f,color:#fff,stroke:#1f3a5f
+  classDef silo fill:#7a1f2b,color:#fff,stroke:#7a1f2b
+  classDef bridge fill:#8a5a00,color:#fff,stroke:#8a5a00
+  classDef pool fill:#1d6b46,color:#fff,stroke:#1d6b46

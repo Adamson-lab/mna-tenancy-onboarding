@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mnatenancy"
+version = "1.0.0"
+description = "Tenancy control plane for onboarding acquired companies: isolate on Day 1, converge by Day 365, carve out on demand."
+requires-python = ">=3.10"
+dependencies = []   # zero runtime dependencies, on purpose
+license = { text = "Apache-2.0" }
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+mnat = "mnatenancy.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mnatenancy = ["dashboard.html"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

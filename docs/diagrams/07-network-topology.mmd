@@ -1,0 +1,28 @@
+flowchart TB
+  subgraph ORG["AWS Organization"]
+    subgraph CORE["Parent accounts"]
+      PVPC["Parent VPCs<br/>us-east-1 · eu-west-1"]
+      TGW{{"Transit Gateway"}}
+      INSP["Inspection VPC<br/>NGFW · IDS · DLP"]
+    end
+    subgraph OU["OU: Acquisitions (SCP region lock)"]
+      UFS["Umbrella Federal<br/>SILO acct · us-gov-west-1<br/>(GovCloud partition)"]
+      SP["Sahel Pay<br/>SILO acct · af-south-1"]
+    end
+    subgraph SHARED["Shared platform account"]
+      GLB["Globex Bank<br/>BRIDGE · own schema + KMS<br/>eu-west-1"]
+      INI["Initech Cloud<br/>POOL · RLS rows"]
+    end
+  end
+  PVPC --- TGW
+  TGW --- INSP
+  GLB -- "TGW route table → inspection only" --> INSP
+  INI --- PVPC
+  UFS -. "no network path" .- PVPC
+  SP -. "no network path" .- PVPC
+  classDef s fill:#7a1f2b,color:#fff
+  classDef b fill:#8a5a00,color:#fff
+  classDef p fill:#1d6b46,color:#fff
+  class UFS,SP s
+  class GLB b
+  class INI p

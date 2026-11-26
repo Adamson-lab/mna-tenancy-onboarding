@@ -1,0 +1,24 @@
+flowchart LR
+  subgraph ACQ["Globex on-prem AD"]
+    G1["GLB-Treasury-Ops<br/>amara · ben · chen"]
+    G2["GLB-Treasury-Approvers<br/>chen · dana"]
+    G3["GLB-AP-Vendor<br/>eve · dana"]
+    G4["GLB-Legacy-Mainframe<br/>kofi"]
+  end
+  subgraph MAP["Mapping (manifest)"]
+    M1["→ payments_initiate"]
+    M2["→ payments_approve"]
+    M3["→ vendor_master_edit"]
+    M4["✗ unmapped"]
+  end
+  G1 --> M1
+  G2 --> M2
+  G3 --> M3
+  G4 --> M4
+  M1 & M2 & M3 --> SOD{"SoD engine<br/>initiate+approve<br/>vendor+approve"}
+  SOD -- "chen, dana: toxic" --> Q["QUARANTINE approval side<br/>(user keeps day job)"]
+  SOD -- clean --> GR["Tenant-scoped grants<br/>northwind-globex-bank:*"]
+  Q --> TKT["IGA re-certification ticket"]
+  M4 --> GATE["Blocks Day 100 → 365 gate"]
+  GR --> AUD[("audit")]
+  Q --> AUD

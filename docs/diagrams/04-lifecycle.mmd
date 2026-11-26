@@ -1,0 +1,21 @@
+stateDiagram-v2
+  direction LR
+  [*] --> PRE_CLOSE: deal signed
+  PRE_CLOSE --> DAY_1: gate ✓ legally closed<br/>✓ regulator approved<br/>✓ landing zone provisioned
+  DAY_1 --> DAY_100: gate ✓ 0 live SoD conflicts<br/>✓ MFA ≥ 90%<br/>✓ 0 critical findings<br/>✓ audit chain valid
+  DAY_100 --> DAY_365: gate ✓ every TSA has exit plan<br/>✓ no unmapped IdP groups
+  DAY_365 --> INTEGRATED: gate ✓ all TSAs exited
+  PRE_CLOSE --> CARVED_OUT: deal blocked / remedy
+  DAY_1 --> CARVED_OUT
+  DAY_100 --> CARVED_OUT
+  DAY_365 --> CARVED_OUT
+  INTEGRATED --> CARVED_OUT: divestiture
+  note right of PRE_CLOSE
+    clean-team only, aggregated data only
+    (HSR Act / EU Merger Reg gun-jumping)
+    clean team auto-dissolved at close
+  end note
+  note right of DAY_100
+    tier migrates per convergence path
+    tfvars re-rendered → terraform plan
+  end note

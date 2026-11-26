@@ -1,0 +1,95 @@
+
+━━ 1. Bootstrap the acquirer (parent tenant + its IGA roles) ━━━━━━━━━━━━━━━━━━━
+  {'tenant_id': 'northwind', 'principals': 8}
+
+━━ 2. Onboard four deals - the tiering engine decides isolation per deal ━━━━━━━
+  target                     risk  day-1   target   hard constraints
+  globex-bank                  15  silo    bridge   -
+                              ↳ identity: 22 grants, 2 QUARANTINED for SoD ['chen', 'dana']
+  initech-cloud                 0  bridge  pool     -
+  umbrella-federal-systems      1  silo    silo     sovereign regime(s) ['CMMC-L3', 'FedRAMP-High', 'ITAR'] -> dedicated SILO, never pooled; residency ['us-gov-west-1'] not served by parent regions -> regional SILO until a cell exists
+  sahel-pay                     8  silo    silo     sovereign regime(s) ['NDPR-Sovereign'] -> dedicated SILO, never pooled; residency ['af-south-1'] not served by parent regions -> regional SILO until a cell exists; regulatory approval pending -> no integration, clean-team access only
+  landing-zone tfvars rendered → out/terraform/
+
+━━ 3. PRE-CLOSE: gun-jumping guard (HSR Act / EU Merger Regulation) ━━━━━━━━━━━━
+  DENY  [R1] northwind:cro                      read_aggregated_financials  on northwind-globex-bank
+         └─ pre-close: principal not on clean-team roster (gun-jumping risk)
+  ALLOW [R1] northwind:corpdev                  read_aggregated_financials  on northwind-globex-bank
+         └─ pre-close clean-team access to aggregated data
+  DENY  [R1] northwind:corpdev                  read_customer_pii           on northwind-globex-bank
+         └─ pre-close: clean team limited to aggregated, non-competitive data
+
+━━ 4. Globex Bank closes → Day 1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  northwind-globex-bank: pre_close → day_1  BLOCKED
+     ✗ deal has not legally closed
+  · legal confirms close
+  ✓ northwind-globex-bank advanced to day_1
+
+━━ 5. Day 1 → Day 100 gate: SoD, MFA, open criticals ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  · treasury escalates: someone re-grants chen payments_approve via an emergency ticket
+  northwind-globex-bank: day_1 → day_100  BLOCKED
+     ✗ 1 effective SoD conflict(s) in live grants
+     ✗ MFA coverage 71% < 90%
+     ✗ 2 critical security findings open
+  · IGA removes toxic combo, MFA rollout hits 94%, 2 criticals closed
+  northwind-globex-bank: day_1 → day_100  READY
+  ✓ northwind-globex-bank advanced to day_100  (tier migrated → BRIDGE)
+
+━━ 6. BRIDGE tier: consolidation allowed, operational access is not ━━━━━━━━━━━━
+  ALLOW [R6] northwind:cfo                      read_aggregated_financials  on northwind-globex-bank
+         └─ BRIDGE: parent role inherited for consolidation
+  DENY  [R6] northwind:cro                      read_customer_data          on northwind-globex-bank
+         └─ BRIDGE: parent roles inherit for consolidation actions only
+  DENY  [R3] northwind-globex-bank:ines         read_customer_pii           on northwind-globex-bank ctx={'region': 'us-east-1'}
+         └─ pii data residency ['eu-west-1']; request from us-east-1
+  ALLOW [R5] northwind-globex-bank:ines         read_customer_pii           on northwind-globex-bank ctx={'region': 'eu-west-1'}
+         └─ direct grant ['customer_pii_read'] on northwind-globex-bank
+  DENY  [R5] northwind-globex-bank:amara        approve_payment             on northwind-globex-bank
+         └─ no role in ['payments_approve'] on northwind-globex-bank
+
+━━ 7. Initech Cloud: low-risk tuck-in races to POOL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✓ northwind-initech-cloud advanced to day_1
+  ✓ northwind-initech-cloud advanced to day_100
+  ✓ northwind-initech-cloud advanced to day_365  (tier migrated → POOL)
+
+━━ 8. Pooled data plane: tenant-scoped repository (no cross-tenant reads, by construction) ━━
+  northwind-globex-bank:ines         scope=['northwind-globex-bank'] rows=25
+  northwind:cro                      scope=['northwind', 'northwind-initech-cloud'] rows=25
+  northwind-initech-cloud:nia        scope=['northwind-initech-cloud'] rows=25
+  ↳ CRO inherits into POOLED Initech (Day 365) but NOT into BRIDGED Globex
+
+━━ 9. Umbrella Federal (FedRAMP-High / ITAR): SILO forever ━━━━━━━━━━━━━━━━━━━━━
+  ✓ northwind-umbrella-federal-systems advanced to day_1
+  DENY  [R2] northwind:platform-lead            admin_infrastructure        on northwind-umbrella-federal-systems
+         └─ sovereign tenant (['CMMC-L3', 'FedRAMP-High', 'ITAR']) requires us_person attribute
+  DENY  [R6] northwind:fed-lead                 read_customer_data          on northwind-umbrella-federal-systems
+         └─ SILO tenant: parent roles do not inherit
+  ALLOW [R4] northwind:ciso                     admin_infrastructure        on northwind-umbrella-federal-systems ctx={'break_glass': True, 'justification': 'SEV1 INC-9001 ransomware containment on UFS bastion'}
+         └─ BREAK-GLASS: SEV1 INC-9001 ransomware containment on UFS bastion
+
+━━ 10. Sahel Pay: regulator approval pending - stays in clean room ━━━━━━━━━━━━━
+  northwind-sahel-pay: pre_close → day_1  BLOCKED
+     ✗ deal has not legally closed
+     ✗ regulatory approval still pending
+  ALLOW [R1] northwind:corpdev                  read_aggregated_financials  on northwind-sahel-pay
+         └─ pre-close clean-team access to aggregated data
+  DENY  [R1] northwind:cfo                      read_aggregated_financials  on northwind-sahel-pay
+         └─ pre-close: principal not on clean-team roster (gun-jumping risk)
+
+━━ 11. CFO view: TSA exposure and synergy case ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Globex Bank                bridge → bridge $     310,420/mo   synergy $    4,524,000/yr
+  Initech Cloud                pool → pool   $      32,400/mo   synergy $      216,000/yr
+  Sahel Pay                    silo → silo   $     113,692/mo   synergy $      144,000/yr
+  Umbrella Federal Systems     silo → silo   $     154,982/mo   synergy $            0/yr
+  PORTFOLIO                  TSA run-rate $407,000/mo · annualised synergy $4,884,000 · TSAs RED: 1
+
+━━ 12. Regulator orders divestiture of Umbrella Federal → carve-out ━━━━━━━━━━━━
+  exported 25 records (sha256 365a9fbb2065b052…), purged 25, residual 0, grants revoked 6, clean=True
+  DENY  [R0] northwind-umbrella-federal-systems:pat read_customer_data          on northwind-umbrella-federal-systems
+         └─ tenant carved out; all access revoked
+
+━━ 13. Tamper-evidence: someone edits the audit log directly ━━━━━━━━━━━━━━━━━━━
+  original : {'valid': True, 'entries': 48, 'head': '613e7a0ee2391f61a94d0c4cb004656a14fc0c28757b7d3a8252bc0802e66cd2'}
+  tampered : {'valid': False, 'entries': 18, 'broken_at_seq': 18}
+
+Done. State in demo.db; tfvars + carve-out evidence in out/. Run `python -m mnatenancy --db demo.db serve` for the dashboard.

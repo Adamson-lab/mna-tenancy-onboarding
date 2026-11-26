@@ -1,0 +1,16 @@
+{
+  "tenant_id": "northwind",
+  "name": "Northwind Financial Group (parent)",
+  "regions": ["us-east-1", "eu-west-1"],
+  "regimes": ["SOX", "GLBA", "NYDFS-500"],
+  "principals": [
+    {"user": "cfo",           "roles": ["finance_viewer", "gl_close"],        "attributes": {"title": "Group CFO"}},
+    {"user": "ciso",          "roles": ["security_admin"],                    "attributes": {"title": "Group CISO", "us_person": true}},
+    {"user": "controller",    "roles": ["finance_analyst"],                   "attributes": {"title": "Group Controller"}},
+    {"user": "ext-auditor",   "roles": ["auditor_readonly"],                  "attributes": {"title": "External audit (Big 4)"}},
+    {"user": "platform-lead", "roles": ["cloud_admin"],                       "attributes": {"title": "Head of Platform"}},
+    {"user": "fed-lead",      "roles": ["cloud_admin", "customer_data_read"], "attributes": {"title": "Federal programs lead", "us_person": true}},
+    {"user": "corpdev",       "roles": ["employee"],                          "attributes": {"title": "Head of Corp Dev"}},
+    {"user": "cro",           "roles": ["customer_data_read"],                "attributes": {"title": "Chief Revenue Officer"}}
+  ]
+}

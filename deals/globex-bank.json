@@ -1,0 +1,127 @@
+{
+  "deal_id": "DEAL-2026-014",
+  "target_name": "Globex Bank",
+  "parent_tenant": "northwind",
+  "intent": "absorb",
+  "closed": false,
+  "regulatory_regimes": [
+    "SOX",
+    "GLBA",
+    "PCI-DSS",
+    "GDPR",
+    "DORA"
+  ],
+  "data_residency": [
+    "eu-west-1"
+  ],
+  "parent_regions": [
+    "us-east-1",
+    "eu-west-1"
+  ],
+  "headcount": 4200,
+  "applications": 212,
+  "critical_security_findings": 2,
+  "identity_provider": "on-prem-ad",
+  "mfa_coverage_pct": 71,
+  "pending_regulatory_approval": false,
+  "clean_team": [
+    "northwind:corpdev",
+    "northwind:cfo",
+    "farouk"
+  ],
+  "group_mappings": {
+    "GLB-Everyone": [
+      "employee"
+    ],
+    "GLB-Treasury-Ops": [
+      "payments_initiate"
+    ],
+    "GLB-Treasury-Approvers": [
+      "payments_approve"
+    ],
+    "GLB-AP-Vendor": [
+      "vendor_master_edit"
+    ],
+    "GLB-Finance": [
+      "finance_analyst"
+    ],
+    "GLB-IT-Admins": [
+      "cloud_admin"
+    ],
+    "GLB-CustomerOps": [
+      "customer_pii_read"
+    ]
+  },
+  "acquired_groups": {
+    "GLB-Everyone": [
+      "amara",
+      "ben",
+      "chen",
+      "dana",
+      "eve",
+      "farouk",
+      "grace",
+      "hiro",
+      "ines",
+      "jo",
+      "kofi"
+    ],
+    "GLB-Treasury-Ops": [
+      "amara",
+      "ben",
+      "chen"
+    ],
+    "GLB-Treasury-Approvers": [
+      "chen",
+      "dana"
+    ],
+    "GLB-AP-Vendor": [
+      "eve",
+      "dana"
+    ],
+    "GLB-Finance": [
+      "farouk",
+      "grace"
+    ],
+    "GLB-IT-Admins": [
+      "hiro"
+    ],
+    "GLB-CustomerOps": [
+      "ines",
+      "jo"
+    ],
+    "GLB-Legacy-Mainframe": [
+      "kofi"
+    ]
+  },
+  "tsa": [
+    {
+      "name": "core-banking-hosting",
+      "provider": "Seller DC",
+      "monthly_cost": 310000,
+      "end_date": "2027-09-30",
+      "exit_plan": null
+    },
+    {
+      "name": "swift-gateway",
+      "provider": "Seller Ops",
+      "monthly_cost": 45000,
+      "end_date": "2027-02-15",
+      "exit_plan": null
+    },
+    {
+      "name": "payroll",
+      "provider": "Seller HR",
+      "monthly_cost": 22000,
+      "end_date": "2027-01-31",
+      "exit_plan": "Migrate to parent Workday tenant, wave 2"
+    }
+  ],
+  "monthly_usage": {
+    "vcpu": 6400,
+    "storage_tb": 900,
+    "db_tb": 140,
+    "seats": 4200,
+    "egress_tb": 60
+  }
+}

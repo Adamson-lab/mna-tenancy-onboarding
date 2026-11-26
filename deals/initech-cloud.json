@@ -1,0 +1,33 @@
+{
+  "deal_id": "DEAL-2026-021",
+  "target_name": "Initech Cloud",
+  "parent_tenant": "northwind",
+  "intent": "absorb",
+  "closed": true,
+  "regulatory_regimes": ["SOC2"],
+  "data_residency": [],
+  "parent_regions": ["us-east-1", "eu-west-1"],
+  "headcount": 180,
+  "applications": 14,
+  "critical_security_findings": 0,
+  "identity_provider": "okta",
+  "mfa_coverage_pct": 98,
+  "pending_regulatory_approval": false,
+  "clean_team": [],
+  "group_mappings": {
+    "INI-All": ["employee"],
+    "INI-Eng": ["cloud_admin"],
+    "INI-Support": ["customer_data_read"],
+    "INI-Finance": ["finance_analyst"]
+  },
+  "acquired_groups": {
+    "INI-All": ["lena", "mo", "nia", "omar"],
+    "INI-Eng": ["lena", "mo"],
+    "INI-Support": ["nia"],
+    "INI-Finance": ["omar"]
+  },
+  "tsa": [
+    {"name": "seller-aws-org", "provider": "Seller", "monthly_cost": 18000, "end_date": "2027-02-28", "exit_plan": "Account move into parent AWS Org via invite"}
+  ],
+  "monthly_usage": {"vcpu": 900, "storage_tb": 60, "db_tb": 8, "seats": 180, "egress_tb": 12}
+}

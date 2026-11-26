@@ -1,0 +1,19 @@
+gantt
+  title Integration timeline (Globex Bank, DEAL-2026-014)
+  dateFormat YYYY-MM-DD
+  axisFormat %b %y
+  section Pre-close
+  Clean team (aggregated data only)   :a1, 2026-11-01, 30d
+  Landing zone rendered (SILO)        :a2, 2026-11-10, 10d
+  section Day 1
+  Legal close + clean team dissolved  :milestone, m1, 2026-12-01, 0d
+  Identity federation + SoD quarantine:b1, 2026-12-01, 14d
+  MFA rollout 71 to 94 pct               :b2, 2026-12-01, 60d
+  Close 2 critical findings           :b3, 2026-12-05, 45d
+  section Day 100
+  Migrate SILO to BRIDGE               :milestone, m2, 2027-03-10, 0d
+  TSA exit - payroll                   :c1, 2027-01-01, 31d
+  TSA exit - SWIFT gateway             :crit, c2, 2027-01-15, 31d
+  section Day 365
+  TSA exit - core banking hosting      :d1, 2027-04-01, 183d
+  Target tier reached (BRIDGE)        :milestone, m3, 2027-12-01, 0d

@@ -1,0 +1,29 @@
+{
+  "deal_id": "DEAL-2026-030",
+  "target_name": "Umbrella Federal Systems",
+  "parent_tenant": "northwind",
+  "intent": "preserve",
+  "closed": true,
+  "regulatory_regimes": ["FedRAMP-High", "ITAR", "CMMC-L3", "SOX"],
+  "data_residency": ["us-gov-west-1"],
+  "parent_regions": ["us-east-1", "eu-west-1"],
+  "headcount": 950,
+  "applications": 61,
+  "critical_security_findings": 0,
+  "identity_provider": "azure-ad",
+  "mfa_coverage_pct": 100,
+  "pending_regulatory_approval": false,
+  "clean_team": [],
+  "group_mappings": {
+    "UFS-All": ["employee"],
+    "UFS-Program-Data": ["customer_data_read"],
+    "UFS-SecOps": ["security_admin"]
+  },
+  "acquired_groups": {
+    "UFS-All": ["pat", "quinn", "rosa"],
+    "UFS-Program-Data": ["pat", "quinn"],
+    "UFS-SecOps": ["rosa"]
+  },
+  "tsa": [],
+  "monthly_usage": {"vcpu": 2200, "storage_tb": 300, "db_tb": 30, "seats": 950, "egress_tb": 4}
+}

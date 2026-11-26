@@ -1,0 +1,21 @@
+sequenceDiagram
+  autonumber
+  actor U as northwind:cro
+  participant API as API / app
+  participant PDP as Policy engine
+  participant REG as Tenant registry
+  participant REPO as TenantScopedRepo
+  participant DB as Postgres (RLS)
+  participant AUD as Audit chain
+  U->>API: GET /api/records?action=read_customer_data
+  API->>PDP: allowed_tenants(cro, read_customer_data)
+  loop each tenant
+    PDP->>REG: tier, phase, regimes, regions
+    Note over PDP: R0 exists · R1 pre-close guard · R2 sovereign<br/>R3 residency · R4 break-glass · R5 direct · R6 inherit
+  end
+  PDP-->>API: scope = {northwind, northwind-initech-cloud}
+  API->>REPO: TenantScopedRepo(scope).query()
+  REPO->>DB: SET LOCAL app.tenant_ids=...<br/>SELECT ... WHERE tenant_id = ANY(scope)
+  DB-->>REPO: rows (Globex excluded: BRIDGE)
+  API->>AUD: records:read {scope, rows} → sha256(prev ‖ entry)
+  API-->>U: 25 rows

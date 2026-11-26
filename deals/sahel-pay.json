@@ -1,0 +1,33 @@
+{
+  "deal_id": "DEAL-2026-037",
+  "target_name": "Sahel Pay",
+  "parent_tenant": "northwind",
+  "intent": "preserve",
+  "closed": false,
+  "regulatory_regimes": ["CBN-RiskBased", "PCI-DSS", "NDPR-Sovereign"],
+  "data_residency": ["af-south-1"],
+  "parent_regions": ["us-east-1", "eu-west-1"],
+  "headcount": 640,
+  "applications": 38,
+  "critical_security_findings": 1,
+  "identity_provider": "azure-ad",
+  "mfa_coverage_pct": 88,
+  "pending_regulatory_approval": true,
+  "clean_team": ["northwind:corpdev", "tunde"],
+  "group_mappings": {
+    "SP-All": ["employee"],
+    "SP-Settlement": ["payments_initiate"],
+    "SP-Settlement-Approve": ["payments_approve"],
+    "SP-Finance": ["finance_analyst"]
+  },
+  "acquired_groups": {
+    "SP-All": ["tunde", "uche", "vivian", "wale"],
+    "SP-Settlement": ["uche"],
+    "SP-Settlement-Approve": ["vivian"],
+    "SP-Finance": ["tunde"]
+  },
+  "tsa": [
+    {"name": "nibss-switch-connectivity", "provider": "Seller Ops", "monthly_cost": 12000, "end_date": "2027-06-30", "exit_plan": null}
+  ],
+  "monthly_usage": {"vcpu": 1400, "storage_tb": 120, "db_tb": 22, "seats": 640, "egress_tb": 9}
+}
